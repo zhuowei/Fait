@@ -1,8 +1,11 @@
-Currently just a bit of code to interact with iOS' Lockdownd.
+Currently just a bit of code to interact with iOS' Lockdownd and usbmuxd.
 
-You probably want to use libimobiledevice to setup the connection to Lockdownd for now: run
-`iproxy 62078 62078`
+To run:
 
-The pairing record for your device should be placed in pairrecord.plist. You can find these in /var/lib/lockdown . In the future this'll grab these from lockdownd automatically.
+`go run lockdownclient.go usbmux.go`
 
-Licensed under the three-clause MIT license.
+You probably want to use libimobiledevice to setup the connection to the device: run `ssh -L 62078:/var/run/usbmuxd yourmachine` to forward the usbmuxd socket from the machine attached to the device to your dev machine.
+
+The pairing record for your device should be placed in pairrecord.plist. You can find these in /var/lib/lockdown . In the future this'll grab these from usbmuxd automatically.
+
+Licensed under the three-clause BSD license.

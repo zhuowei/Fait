@@ -67,13 +67,13 @@ func (client *LockdownClient) Read() (interface{}, error) {
 	return plist, error
 }
 
-func (client *LockdownClient) Transact(request interface{}) (interface{}, error) {
+func (client *LockdownClient) Transact(request interface{}) (map[string]interface{}, error) {
 	error := client.Write(request)
 	if error != nil {
 		return nil, error
 	}
 	ret, error := client.Read()
-	return ret, error
+	return ret.(map[string]interface{}), error
 
 }
 
@@ -119,7 +119,7 @@ func (client *LockdownClient) StartSession(hostID string, systemBUID string) (in
 	return out, error
 }
 
-func (client *LockdownClient) StartService(serviceName string) (interface{}, error) {
+func (client *LockdownClient) StartService(serviceName string) (map[string]interface{}, error) {
 	d := map[string] interface{} {
 		"Request": "StartService",
 		"Label": "iTunesHelper",
@@ -164,7 +164,7 @@ func main() {
 	if error != nil {
 		panic(error)
 	}
-	conn, error := net.Dial("tcp", "localhost:62078")
+	conn, error := UsbmuxConnect(1, 62078)//net.Dial("tcp", "localhost:62078")
 	if error != nil {
 		panic(error)
 	}
@@ -178,9 +178,22 @@ func main() {
 	if error != nil {
 		panic(error)
 	}
-	d, error = client.StartService("com.apple.ait.aitd")
+	startServiceReturn, error := client.StartService("com.apple.ait.aitd")
 	if error != nil {
 		panic(error)
 	}
-	fmt.Println(d)
+	fmt.Println(startServiceReturn)
+	conn2, error := UsbmuxConnect(1, int(startServiceReturn["Port"].(uint64)))
+	if error != nil {
+		panic(error)
+	}
+	conn2.Write([]byte{0, 0, 0, 0})
+	b := make([]byte, 1)
+	for {
+		_, error = conn2.Read(b)
+		if error != nil {
+			panic(error)
+		}
+		fmt.Println(hex.Dump(b))
+	}
 }
